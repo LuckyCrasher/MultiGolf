@@ -142,7 +142,7 @@ def handle_connect_to_session(data):
 
     response = {'session_id': game_session_id, 'game_session_exists': True}
 
-    emit('connected_to_game_session', response)
+    emit('connected_to_game_session', response, broadcast=True, include_self=True)
 
 
 @socketio.on('start_path_determination')
