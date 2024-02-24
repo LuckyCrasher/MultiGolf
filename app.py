@@ -9,10 +9,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 socketio = SocketIO(app)
 
-debug = False
-if os.getenv('TARGET') == "DEBUG":
-    debug = True
-
 active_sessions = {}
 session_expiry_seconds = 3600  # 1 hour
 
