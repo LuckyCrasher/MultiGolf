@@ -65,6 +65,23 @@ def create_game_session():
     return {'created_game_session': True, 'game_session_id': game_session_id}
 
 
+@app.route('/game_started/<game_session_id>', methods=['GET'])
+def join_session(game_session_id):
+    app.logger.info(f"Game started req: {game_session_id}")
+
+    if game_session_id not in active_game_sessions or is_game_session_expired(game_session_id):
+        return {'session_exists': False,
+                'Error': 'session not found or expired',
+                'session_id': game_session_id}
+
+    data_out = {
+        'game_session_id': game_session_id,
+        'session_exists': True,
+        'game_started': active_game_sessions[game_session_id]['game_started'],
+    }
+    return data_out
+
+
 @app.route('/join_game_session/<game_session_id>', methods=['GET'])
 def join_session(game_session_id):
     app.logger.info(f"Join req: {game_session_id}")
