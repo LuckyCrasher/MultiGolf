@@ -176,6 +176,6 @@ def handle_disconnect():
 if __name__ == '__main__':
     app.logger.info("Starting MultiGolf backend...")
     socketio.run(app, host=host, port=port, debug=True, 
-                 certfile="/etc/letsencrypt/live/multigolf.twostone.xyz/fullchain.pem", 
-                 keyfile="/etc/letsencrypt/live/multigolf.twostone.xyz/privkey.pem")
+                 certfile="fullchain.pem",
+                 keyfile="privkey.pem")
     #socketio.run(app, host=host, port=port, debug=True)
