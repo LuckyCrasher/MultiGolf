@@ -135,16 +135,12 @@ def handle_connect_to_session(data):
     if game_session_id not in active_game_sessions or is_game_session_expired(game_session_id):
         return emit('connected_to_game_session', {'session_exists': False})  # Handle invalid session or session expiry
 
-    return emit('connected_to_game_session', {"HELLO": "WORLD"})
-
-    #join_room(game_session_id)
+    join_room(game_session_id)
 
     # Update last activity timestamp for the session
-    #active_game_sessions[game_session_id]['last_activity_timestamp'] = time.time()
-
-    #response = {'session_id': game_session_id, 'game_session_exists': True}
-
-    #emit('connected_to_game_session', response, broadcast=True, include_self=True)
+    active_game_sessions[game_session_id]['last_activity_timestamp'] = time.time()
+    response = {'session_id': game_session_id, 'game_session_exists': True}
+    emit('connected_to_game_session', response, broadcast=True, include_self=True)
 
 
 @socketio.on('start_path_determination')
