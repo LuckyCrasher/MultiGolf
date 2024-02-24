@@ -38,9 +38,10 @@ def generate_unique_session_id():
 
 
 def is_game_session_expired(game_session_id):
-    last_activity_timestamp = active_game_sessions[game_session_id].get('last_activity_timestamp', 0)
-    current_timestamp = time.time()
-    return (current_timestamp - last_activity_timestamp) > session_expiry_seconds
+    return False
+    #last_activity_timestamp = active_game_sessions[game_session_id].get('last_activity_timestamp', 0)
+    #current_timestamp = time.time()
+    #return (current_timestamp - last_activity_timestamp) > session_expiry_seconds
 
 
 @app.route("/", methods=['GET'])
@@ -58,8 +59,7 @@ def create_game_session():
         game_session_id = generate_unique_session_id()
         count += 1
 
-    active_game_sessions[game_session_id] = {'game_started': False}
-    active_game_sessions[game_session_id] = {'device_count': 1}
+    active_game_sessions[game_session_id] = {'game_started': False, 'device_count': 1}
 
     app.logger.info(f"Created new game session {game_session_id}")
     return {'created_game_session': True, 'game_session_id': game_session_id}
@@ -67,6 +67,8 @@ def create_game_session():
 
 @app.route('/join_game_session/<game_session_id>', methods=['GET'])
 def join_session(game_session_id):
+    app.logger.info(f"Join req: {game_session_id}")
+
     if game_session_id not in active_game_sessions or is_game_session_expired(game_session_id):
         return {'session_exists': False,
                 'Error': 'session not found or expired',
