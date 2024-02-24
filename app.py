@@ -1,6 +1,9 @@
+import logging
 import os
+import sys
 import time
 import uuid
+from logging.handlers import RotatingFileHandler
 
 from flask import Flask
 from flask_socketio import SocketIO, emit, join_room
@@ -16,6 +19,14 @@ path_events = {}
 debug = False
 
 
+# Configure logging to a file
+file_handler = RotatingFileHandler('app.log', maxBytes=10240, backupCount=5)
+file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+app.logger.addHandler(file_handler)
+
+app.logger.setLevel(logging.INFO)  # Set the desired logging level (e.g., INFO, WARNING, ERROR)
+
+
 def generate_unique_session_id():
     return str(uuid.uuid4())
 
@@ -26,9 +37,22 @@ def is_game_session_expired(game_session_id):
     return (current_timestamp - last_activity_timestamp) > session_expiry_seconds
 
 
+@app.route("/", methods=['GET'])
+def index():
+    app.logger.info("index request")
+    return {"response": "Multi golf is alive and well..."}
+
+
 @app.route('/create_game_session', methods=['GET'])
 def create_game_session():
+    timeout = 5
+    count = 0
     game_session_id = generate_unique_session_id()
+    while (game_session_id in active_game_sessions) and (count < timeout):
+        game_session_id = generate_unique_session_id()
+        count += 1
+
+    app.logger.info(f"Created new game session {game_session_id}")
     return {'created_game_session': True, 'game_session_id': game_session_id}
 
 
@@ -145,4 +169,5 @@ def handle_disconnect():
 
 
 if __name__ == '__main__':
+    app.logger.info("Starting MultiGolf backend...")
     socketio.run(app, debug=debug)
