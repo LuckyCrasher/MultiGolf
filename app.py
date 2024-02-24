@@ -2,14 +2,14 @@ import os
 import time
 import uuid
 
-from flask import Flask, render_template
+from flask import Flask
 from flask_socketio import SocketIO, emit, join_room
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 socketio = SocketIO(app)
 
-active_sessions = {}
+active_game_sessions = {}
 session_expiry_seconds = 3600  # 1 hour
 
 path_events = {}
@@ -19,49 +19,49 @@ def generate_unique_session_id():
     return str(uuid.uuid4())
 
 
-@app.route('/create_session', methods=['GET'])
-def create_session():
-    session_id = generate_unique_session_id()
-    return {'created_session': True, 'session_id': session_id}
-
-
-@app.route('/join_session/<session_id>', methods=['GET'])
-def join_session(session_id):
-    if session_id not in active_sessions or is_session_expired(session_id):
-        return {'session_exists': False,
-                'Error': 'session not found or expired',
-                'session_id': session_id}
-    return {'session_exists': True,
-            'session_id': session_id}
-
-
-@socketio.on('connect_to_session')
-def handle_connect_to_session(data):
-    session_id = data['session_id']
-
-    # Check if the session exists
-    if session_id not in active_sessions or is_session_expired(session_id):
-        return  # Handle invalid session or session expiry
-
-    join_room(session_id)
-
-    # Update last activity timestamp for the session
-    active_sessions[session_id]['last_activity_timestamp'] = time.time()
-
-    emit('connected_to_session', {'session_id': session_id})
-
-
-def is_session_expired(session_id):
-    last_activity_timestamp = active_sessions[session_id].get('last_activity_timestamp', 0)
+def is_game_session_expired(game_session_id):
+    last_activity_timestamp = active_game_sessions[game_session_id].get('last_activity_timestamp', 0)
     current_timestamp = time.time()
     return (current_timestamp - last_activity_timestamp) > session_expiry_seconds
+
+
+@app.route('/create_game_session', methods=['GET'])
+def create_game_session():
+    game_session_id = generate_unique_session_id()
+    return {'created_game_session': True, 'game_session_id': game_session_id}
+
+
+@app.route('/join_game_session/<game_session_id>', methods=['GET'])
+def join_session(game_session_id):
+    if game_session_id not in active_game_sessions or is_game_session_expired(game_session_id):
+        return {'session_exists': False,
+                'Error': 'session not found or expired',
+                'session_id': game_session_id}
+    return {'session_exists': True,
+            'session_id': game_session_id}
+
+
+@socketio.on('connect_to_game_session')
+def handle_connect_to_session(data):
+    game_session_id = data['game_session_id']
+
+    # Check if the session exists
+    if game_session_id not in active_game_sessions or is_game_session_expired(game_session_id):
+        return  # Handle invalid session or session expiry
+
+    join_room(game_session_id)
+
+    # Update last activity timestamp for the session
+    active_game_sessions[game_session_id]['last_activity_timestamp'] = time.time()
+
+    emit('connected_to_game_session', {'session_id': game_session_id})
 
 
 @socketio.on('start_path_determination')
 def handle_start_path_determination(data):
     session_id = data['session_id']
 
-    if session_id not in active_sessions or is_session_expired(session_id):
+    if session_id not in active_game_sessions or is_game_session_expired(session_id):
         emit('start_path_determination',
              {'session_exists': False,
               'Error': 'session does not exist',
@@ -76,7 +76,7 @@ def handle_start_path_determination(data):
 def handle_finish_path_determination(data):
     session_id = data['session_id']
 
-    if session_id not in active_sessions or is_session_expired(session_id):
+    if session_id not in active_game_sessions or is_game_session_expired(session_id):
         emit('finish_path_determination',
              {'session_exists': False,
               'Error': 'session does not exist',
@@ -99,18 +99,18 @@ def handle_path_release_touch(data):
     #    <additional event data like time and screen position>
     # }
 
-    session_id = data['session_id']
+    game_session_id = data['game_session_id']
 
     # Check if the session exists
-    if session_id not in active_sessions or is_session_expired(session_id):
+    if game_session_id not in active_game_sessions or is_game_session_expired(game_session_id):
         emit('path_new_touch_release',
              {'session_exists': False,
               'Error': 'session does not exist',
-              'session_id': session_id})  # Handle invalid session or session expiry
+              'session_id': game_session_id})  # Handle invalid session or session expiry
         return
 
-    session_id = data['session_id']
-    path_events[session_id] += data
+    game_session_id = data['game_session_id']
+    path_events[game_session_id] += data
 
 
 @socketio.on('path_new_touch')
@@ -122,18 +122,18 @@ def handle_path_touch(data):
     #    <additional event data like time and screen position>
     # }
 
-    session_id = data['session_id']
+    game_session_id = data['game_session_id']
 
     # Check if the session exists
-    if session_id not in active_sessions or is_session_expired(session_id):
+    if game_session_id not in active_game_sessions or is_game_session_expired(game_session_id):
         emit('path_new_touch_release',
-             {'session_exists': False,
-              'Error': 'session does not exist',
-              'session_id': session_id})  # Handle invalid session or session expiry
+             {'game_session_exists': False,
+              'Error': 'game_session does not exist',
+              'game_session_id': game_session_id})  # Handle invalid session or session expiry
         return
 
-    session_id = data['session_id']
-    path_events[session_id] += data
+    game_session_id = data['game_session_id']
+    path_events[game_session_id] += data
 
 
 @socketio.on('disconnect')
@@ -144,4 +144,4 @@ def handle_disconnect():
 
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=True, werkzeug=True)
