@@ -13,7 +13,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 CORS(app)
 
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 host = "0.0.0.0"
 port = 5000
@@ -129,16 +129,20 @@ def start_game(game_session_id):
 def handle_connect_to_session(data):
     game_session_id = data['game_session_id']
 
+    app.logger.info(f"SOCKET: connect to game session {game_session_id}")
+
     # Check if the session exists
     if game_session_id not in active_game_sessions or is_game_session_expired(game_session_id):
-        return  # Handle invalid session or session expiry
+        return {'session_exists': False}  # Handle invalid session or session expiry
 
     join_room(game_session_id)
 
     # Update last activity timestamp for the session
     active_game_sessions[game_session_id]['last_activity_timestamp'] = time.time()
 
-    emit('connected_to_game_session', {'session_id': game_session_id})
+    response = {'session_id': game_session_id, 'game_session_exists': True}
+
+    emit('connected_to_game_session', response)
 
 
 @socketio.on('start_path_determination')
