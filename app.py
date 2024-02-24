@@ -13,17 +13,17 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 CORS(app)
 
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", ssl_context=('cert.pem', 'key.pem'))
 
 host = "0.0.0.0"
-port = 5000
+port = 443
 
 # active_game_session
 
 active_game_sessions = {}
 session_expiry_seconds = 3600  # 1 hour
 
-debug = False
+debug = True
 
 
 # Configure logging to a file
@@ -173,4 +173,4 @@ def handle_disconnect():
 
 if __name__ == '__main__':
     app.logger.info("Starting MultiGolf backend...")
-    socketio.run(app, debug=debug, host=host, port=port)
+    socketio.run(app, host=host, port=port, debug=True, ssl_context=('cert.pem', 'key.pem'))
