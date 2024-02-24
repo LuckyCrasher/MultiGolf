@@ -13,7 +13,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 CORS(app)
 
-socketio = SocketIO(app, cors_allowed_origins="*", ssl_context=('cert.pem', 'key.pem'))
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 host = "0.0.0.0"
 port = 443
@@ -173,4 +173,4 @@ def handle_disconnect():
 
 if __name__ == '__main__':
     app.logger.info("Starting MultiGolf backend...")
-    socketio.run(app, host=host, port=port, debug=True, ssl_context=('cert.pem', 'key.pem'))
+    socketio.run(app, host=host, port=port, debug=True)
