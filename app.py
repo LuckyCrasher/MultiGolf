@@ -157,7 +157,7 @@ def handle_update(data):
 
     game_session_id = data['game_session_id']
     update = data['update']
-    active_game_sessions[game_session_id]['updates'] += update
+    active_game_sessions[game_session_id]['updates'].append(update)
 
     app.logger.info(f"New update received {data}")
     app.logger.info(f"Emit updates {update}")
