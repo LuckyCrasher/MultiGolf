@@ -16,6 +16,7 @@ CORS(app)
 socketio = SocketIO(app)
 
 host = "0.0.0.0"
+port = 8080
 
 active_game_sessions = {}
 session_expiry_seconds = 3600  # 1 hour
@@ -182,4 +183,4 @@ def handle_disconnect():
 
 if __name__ == '__main__':
     app.logger.info("Starting MultiGolf backend...")
-    socketio.run(app, debug=debug, host=host)
+    socketio.run(app, debug=debug, host=host, port=port)
