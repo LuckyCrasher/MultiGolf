@@ -6,10 +6,13 @@ import uuid
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask
+from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+CORS(app)
+
 socketio = SocketIO(app)
 
 host = "0.0.0.0"
@@ -54,6 +57,8 @@ def create_game_session():
         game_session_id = generate_unique_session_id()
         count += 1
 
+    active_game_sessions[game_session_id] = {'game_started': False}
+
     app.logger.info(f"Created new game session {game_session_id}")
     return {'created_game_session': True, 'game_session_id': game_session_id}
 
@@ -64,8 +69,13 @@ def join_session(game_session_id):
         return {'session_exists': False,
                 'Error': 'session not found or expired',
                 'session_id': game_session_id}
-    return {'session_exists': True,
-            'session_id': game_session_id}
+    data_out = {
+        'game_session_id': game_session_id,
+        'session_exists:': True,
+        'game_started': active_game_sessions[game_session_id]['game_started']
+    }
+
+    return data_out
 
 
 @socketio.on('connect_to_game_session')
