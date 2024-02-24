@@ -162,7 +162,7 @@ def handle_update(data):
     active_game_sessions[game_session_id]['updates'].append(update)
 
     app.logger.info(f"New update received {data}")
-    app.logger.info(f"Emit updates {update}")
+    #app.logger.info(f"Emit updates {update}")
     emit('update', update, broadcast=True, include_self=True)
 
 
