@@ -16,7 +16,7 @@ CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 host = "0.0.0.0"
-port = 443
+port = 8443
 
 # active_game_session
 
