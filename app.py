@@ -76,7 +76,7 @@ def join_session(game_session_id):
 
     data_out = {
         'game_session_id': game_session_id,
-        'session_exists:': True,
+        'session_exists': True,
         'game_started': active_game_sessions[game_session_id]['game_started'],
         'assigned_device_index': active_game_sessions[game_session_id]['device_count']
     }
