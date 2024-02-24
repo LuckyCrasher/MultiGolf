@@ -139,6 +139,7 @@ def handle_path_touch(data):
 @socketio.on('disconnect')
 def handle_disconnect():
     # Handle disconnect logic
+    print("disconnect event")
     pass
 
 
