@@ -66,7 +66,7 @@ def create_game_session():
 
 
 @app.route('/game_started/<game_session_id>', methods=['GET'])
-def join_session(game_session_id):
+def game_started(game_session_id):
     app.logger.info(f"Game started req: {game_session_id}")
 
     if game_session_id not in active_game_sessions or is_game_session_expired(game_session_id):
