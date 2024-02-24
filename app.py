@@ -13,6 +13,7 @@ active_game_sessions = {}
 session_expiry_seconds = 3600  # 1 hour
 
 path_events = {}
+debug = False
 
 
 def generate_unique_session_id():
@@ -144,4 +145,4 @@ def handle_disconnect():
 
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, werkzeug=True)
+    socketio.run(app, debug=debug, werkzeug=True)
