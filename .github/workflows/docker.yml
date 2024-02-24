@@ -25,10 +25,10 @@ jobs:
         pip install -r requirements.txt
 
     - name: Build Docker image
-      run: docker build -t your-image-name .
+      run: docker build -t mutligolf .
 
     - name: Log in to Docker Hub
       run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
     - name: Push Docker image to Docker Hub
-      run: docker push your-image-name
+      run: docker push mutligolf
