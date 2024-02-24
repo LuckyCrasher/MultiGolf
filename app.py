@@ -139,6 +139,7 @@ def handle_connect_to_session(data):
     # Update last activity timestamp for the session
     active_game_sessions[game_session_id]['last_activity_timestamp'] = time.time()
     updates = active_game_sessions[game_session_id]['updates']
+    app.logger.info(f"Sending updates {updates}")
     response = {'session_id': game_session_id, 'game_session_exists': True, 'updates': updates}
     emit('connected_to_game_session', response, broadcast=True, include_self=True)
 
@@ -156,7 +157,7 @@ def handle_update(data):
 
     game_session_id = data['game_session_id']
     active_game_sessions[game_session_id]['updates'] += data
-
+    app.logger.info(f"New update {data}")
     emit('update', data, broadcast=True, include_self=True)
 
 
