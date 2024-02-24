@@ -156,9 +156,12 @@ def handle_update(data):
         return
 
     game_session_id = data['game_session_id']
-    active_game_sessions[game_session_id]['updates'] += data
-    app.logger.info(f"New update {data}")
-    emit('update', data, broadcast=True, include_self=True)
+    update = data['update']
+    active_game_sessions[game_session_id]['updates'] += update
+
+    app.logger.info(f"New update received {data}")
+    app.logger.info(f"Emit updates {update}")
+    emit('update', update, broadcast=True, include_self=True)
 
 
 @socketio.on('disconnect')
