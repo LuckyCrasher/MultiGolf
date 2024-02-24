@@ -23,7 +23,6 @@ port = 5000
 active_game_sessions = {}
 session_expiry_seconds = 3600  # 1 hour
 
-path_events = {}
 debug = False
 
 
@@ -61,7 +60,7 @@ def create_game_session():
         game_session_id = generate_unique_session_id()
         count += 1
 
-    active_game_sessions[game_session_id] = {'game_started': False, 'device_count': 1}
+    active_game_sessions[game_session_id] = {'game_started': False, 'device_count': 1, 'updates': []}
 
     app.logger.info(f"Created new game session {game_session_id}")
     return {'created_game_session': True, 'game_session_id': game_session_id}
@@ -139,77 +138,14 @@ def handle_connect_to_session(data):
 
     # Update last activity timestamp for the session
     active_game_sessions[game_session_id]['last_activity_timestamp'] = time.time()
-    response = {'session_id': game_session_id, 'game_session_exists': True}
+    updates = active_game_sessions[game_session_id]['updates']
+    response = {'session_id': game_session_id, 'game_session_exists': True, 'updates': updates}
     emit('connected_to_game_session', response, broadcast=True, include_self=True)
 
 
-@socketio.on('start_path_determination')
-def handle_start_path_determination(data):
-    session_id = data['session_id']
-
-    if session_id not in active_game_sessions or is_game_session_expired(session_id):
-        emit('start_path_determination',
-             {'session_exists': False,
-              'Error': 'session does not exist',
-              'session_id': session_id})  # Handle invalid session or session expiry
-        return
-
-    data_out = {'session_id': session_id}
-    emit('start_path_determination', data_out, broadcast=True, include_self=True)
-
-
-@socketio.on('finish_path_determination')
-def handle_finish_path_determination(data):
-    session_id = data['session_id']
-
-    if session_id not in active_game_sessions or is_game_session_expired(session_id):
-        emit('finish_path_determination',
-             {'session_exists': False,
-              'Error': 'session does not exist',
-              'session_id': session_id})  # Handle invalid session or session expiry
-        return
-
-    data_out = {
-        'session_id': session_id,
-        'path_events': path_events[session_id]
-    }
-    emit('finish_path_determination', data_out, broadcast=True, include_self=True)
-
-
-@socketio.on('path_new_touch_release')
-def handle_path_release_touch(data):
-    # path new touch release object:
-    # {
-    #    'session_id': <session_id>,
-    #    'event_type': <new_touch/touch_release>,
-    #    <additional event data like time and screen position>
-    # }
-
+@socketio.on('update')
+def handle_update(data):
     game_session_id = data['game_session_id']
-
-    # Check if the session exists
-    if game_session_id not in active_game_sessions or is_game_session_expired(game_session_id):
-        emit('path_new_touch_release',
-             {'session_exists': False,
-              'Error': 'session does not exist',
-              'session_id': game_session_id})  # Handle invalid session or session expiry
-        return
-
-    game_session_id = data['game_session_id']
-    path_events[game_session_id] += data
-
-
-@socketio.on('path_new_touch')
-def handle_path_touch(data):
-    # path new touch release object:
-    # {
-    #    'session_id': <session_id>,
-    #    'event_type': <new_touch/touch_release>,
-    #    <additional event data like time and screen position>
-    # }
-
-    game_session_id = data['game_session_id']
-
     # Check if the session exists
     if game_session_id not in active_game_sessions or is_game_session_expired(game_session_id):
         emit('path_new_touch_release',
@@ -219,7 +155,9 @@ def handle_path_touch(data):
         return
 
     game_session_id = data['game_session_id']
-    path_events[game_session_id] += data
+    active_game_sessions[game_session_id]['updates'] += data
+
+    emit('update', data, broadcast=True, include_self=True)
 
 
 @socketio.on('disconnect')
