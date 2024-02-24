@@ -18,6 +18,8 @@ socketio = SocketIO(app)
 host = "0.0.0.0"
 port = 5000
 
+# active_game_session
+
 active_game_sessions = {}
 session_expiry_seconds = 3600  # 1 hour
 
@@ -99,6 +101,27 @@ def join_session(game_session_id):
     }
     active_game_sessions[game_session_id]['device_count'] += 1
 
+    return data_out
+
+
+@app.route('/start_game/<game_session_id>', methods=['GET'])
+def start_game(game_session_id):
+    app.logger.info(f"Start game req: {game_session_id}")
+
+    if game_session_id not in active_game_sessions or is_game_session_expired(game_session_id):
+        return {'session_exists': False,
+                'Error': 'session not found or expired',
+                'session_id': game_session_id}
+
+    was_running = active_game_sessions[game_session_id]['game_started']
+    if not was_running:
+        active_game_sessions[game_session_id]['game_started'] = True
+
+    data_out = {
+        'game_session_id': game_session_id,
+        'was_already_running': was_running,
+        'game_started': active_game_sessions[game_session_id]['game_started']
+    }
     return data_out
 
 
