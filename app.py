@@ -16,7 +16,7 @@ CORS(app)
 socketio = SocketIO(app)
 
 host = "0.0.0.0"
-port = 80
+port = 5000
 
 active_game_sessions = {}
 session_expiry_seconds = 3600  # 1 hour
