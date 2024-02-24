@@ -125,7 +125,7 @@ def start_game(game_session_id):
     return data_out
 
 
-@socketio.on('connect_to_game_session')
+@socketio.on('login')
 def handle_connect_to_session(data):
     game_session_id = data['game_session_id']
 
