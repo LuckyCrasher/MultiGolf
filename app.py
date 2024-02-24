@@ -59,6 +59,7 @@ def create_game_session():
         count += 1
 
     active_game_sessions[game_session_id] = {'game_started': False}
+    active_game_sessions[game_session_id] = {'device_count': 1}
 
     app.logger.info(f"Created new game session {game_session_id}")
     return {'created_game_session': True, 'game_session_id': game_session_id}
@@ -70,11 +71,14 @@ def join_session(game_session_id):
         return {'session_exists': False,
                 'Error': 'session not found or expired',
                 'session_id': game_session_id}
+
     data_out = {
         'game_session_id': game_session_id,
         'session_exists:': True,
-        'game_started': active_game_sessions[game_session_id]['game_started']
+        'game_started': active_game_sessions[game_session_id]['game_started'],
+        'assigned_device_index': active_game_sessions[game_session_id]['device_count']
     }
+    active_game_sessions[game_session_id]['device_count'] += 1
 
     return data_out
 
