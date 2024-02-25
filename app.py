@@ -143,7 +143,7 @@ def handle_connect_to_session(data):
     updates = active_game_sessions[game_session_id]['updates']
     app.logger.info(f"Sending updates {updates}")
     response = {'session_id': game_session_id, 'game_session_exists': True, 'updates': updates}
-    emit('connected_to_game_session', response, broadcast=True, include_self=True)
+    emit('connected_to_game_session', response, to=game_session_id, broadcast=True, include_self=True)
 
 
 @socketio.on('update')
@@ -157,13 +157,11 @@ def handle_update(data):
               'game_session_id': game_session_id})  # Handle invalid session or session expiry
         return
 
-    game_session_id = data['game_session_id']
     update = data['update']
     active_game_sessions[game_session_id]['updates'].append(update)
 
     app.logger.info(f"New update received {data}")
-    #app.logger.info(f"Emit updates {update}")
-    emit('update', update, broadcast=True, include_self=True)
+    emit('update', update, to=game_session_id, broadcast=True, include_self=True)
 
 
 @socketio.on('disconnect')
